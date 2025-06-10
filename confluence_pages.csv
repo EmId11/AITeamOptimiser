@@ -1,0 +1,40 @@
+page_id,title,space,type,last_updated,updated_by,word_count,version_number,sprint_number
+1,Product Strategy Q1 2024,Product,strategy,2024-01-01 00:00:00,david.kumar,306,5,1
+2,Product Strategy Q2 2024,Product,strategy,2024-01-01 00:00:00,alex.brown,677,6,1
+3,Architecture Decision Record - Auth,Engineering,technical,2024-01-01 00:00:00,tom.garcia,700,1,1
+4,Modernization Initiative - Authentication,Engineering,technical,2024-01-01 00:00:00,sam.miller,1138,7,1
+5,API Documentation - Auth Service,Engineering,technical,2024-01-01 00:00:00,ana.lopez,1305,2,1
+6,Dependency Matrix,Engineering,technical,2024-01-01 00:00:00,jordan.davis,1427,4,1
+7,Product Strategy Q1 2024,Product,strategy,2024-01-15 00:00:00,emma.jones,1201,1,2
+8,Product Strategy Q2 2024,Product,strategy,2024-01-15 00:00:00,sarah.johnson,408,6,2
+9,Architecture Decision Record - Billing,Engineering,technical,2024-01-15 00:00:00,lisa.chen,750,9,2
+10,API Documentation - Auth Service,Engineering,technical,2024-01-15 00:00:00,rachel.wilson,958,7,2
+11,Dependency Matrix,Engineering,technical,2024-01-15 00:00:00,mark.smith,1031,3,2
+12,Product Strategy Q1 2024,Product,strategy,2024-01-29 00:00:00,jordan.davis,360,10,3
+13,Architecture Decision Record - Auth,Engineering,technical,2024-01-29 00:00:00,mark.smith,632,3,3
+14,Modernization Initiative - Authentication,Engineering,technical,2024-01-29 00:00:00,david.kumar,513,10,3
+15,API Documentation - Auth Service,Engineering,technical,2024-01-29 00:00:00,sam.miller,479,8,3
+16,Team Charter and Goals,Engineering,technical,2024-01-29 00:00:00,david.kumar,695,4,3
+17,Dependency Matrix,Engineering,technical,2024-01-29 00:00:00,david.kumar,552,6,3
+18,Product Strategy Q1 2024,Product,strategy,2024-02-12 00:00:00,rachel.wilson,995,4,4
+19,Product Strategy Q2 2024,Product,strategy,2024-02-12 00:00:00,jordan.davis,1300,6,4
+20,Architecture Decision Record - Auth,Engineering,technical,2024-02-12 00:00:00,jordan.davis,1472,6,4
+21,Architecture Decision Record - Billing,Engineering,technical,2024-02-12 00:00:00,david.kumar,367,9,4
+22,API Documentation - Auth Service,Engineering,technical,2024-02-12 00:00:00,david.kumar,920,2,4
+23,Modernization Initiative - Authentication,Engineering,technical,2024-02-26 00:00:00,alex.brown,943,6,5
+24,Dependency Matrix,Engineering,technical,2024-02-26 00:00:00,james.taylor,543,7,5
+25,Product Strategy Q2 2024,Product,strategy,2024-03-11 00:00:00,mark.smith,202,6,6
+26,Architecture Decision Record - Auth,Engineering,technical,2024-03-11 00:00:00,david.kumar,754,1,6
+27,Architecture Decision Record - Billing,Engineering,technical,2024-03-11 00:00:00,sarah.johnson,730,7,6
+28,Modernization Initiative - Authentication,Engineering,technical,2024-03-11 00:00:00,alex.brown,635,1,6
+29,API Documentation - Auth Service,Engineering,technical,2024-03-11 00:00:00,mark.smith,722,1,6
+30,Dependency Matrix,Engineering,technical,2024-03-11 00:00:00,tom.garcia,342,6,6
+31,Architecture Decision Record - Auth,Engineering,technical,2024-03-25 00:00:00,mark.smith,1265,7,7
+32,Architecture Decision Record - Billing,Engineering,technical,2024-03-25 00:00:00,rachel.wilson,1441,8,7
+33,Team Charter and Goals,Engineering,technical,2024-03-25 00:00:00,tom.garcia,1179,10,7
+34,Dependency Matrix,Engineering,technical,2024-03-25 00:00:00,jordan.davis,334,8,7
+35,Product Strategy Q1 2024,Product,strategy,2024-04-08 00:00:00,james.taylor,648,7,8
+36,API Documentation - Auth Service,Engineering,technical,2024-04-08 00:00:00,alex.brown,990,3,8
+37,Dependency Matrix,Engineering,technical,2024-04-08 00:00:00,sam.miller,736,5,8
+38,Team Charter and Goals,Engineering,technical,2024-05-20 00:00:00,alex.brown,1179,3,11
+39,Product Strategy Q2 2024,Product,strategy,2024-06-17 00:00:00,ana.lopez,1130,5,13
