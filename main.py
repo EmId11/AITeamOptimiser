@@ -3785,8 +3785,8 @@ def main():
             "📈 Executive Summary",
             "🔗 Correlation Analysis", 
             "🧠 Deep AI Insights",
-            "🔮 Predictive Scenarios",
-            "🎯 Intervention Roadmap"
+            "🔮 Predictive Scenarios"
+#            "🎯 Intervention Roadmap"
         ]
     )
     
@@ -3820,8 +3820,8 @@ def main():
     elif page == "🔮 Predictive Scenarios":
         show_predictive_scenarios(data, metrics)
         
-    elif page == "🎯 Intervention Roadmap":
-        show_intervention_roadmap(data, metrics)
+#    elif page == "🎯 Intervention Roadmap":
+#        show_intervention_roadmap(data, metrics)
 
 if __name__ == "__main__":
     main()
