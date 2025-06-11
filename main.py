@@ -3096,673 +3096,244 @@ def show_predictive_scenarios(data, metrics):
     </div>
     """, unsafe_allow_html=True)
 
-def show_intervention_roadmap(data, metrics):
-    """Show comprehensive intervention strategies with timeline and success metrics"""
-    
-    st.markdown("## 🎯 Intervention Strategy & Implementation Roadmap")
-    st.markdown("*Data-driven action plan based on comprehensive analysis of your delivery performance*")
-    
-    # Load intervention recommendations from JSON file
+import streamlit as st
+import pandas as pd
+import json
+import plotly.graph_objects as go
+
+# It's good practice to load the JSON once and cache it.
+@st.cache_data
+def load_recommendations(file_path='intervention_recommendations.json'):
+    """Loads the comprehensive recommendations from the JSON file."""
     try:
-        with open('intervention_recommendations.json', 'r') as f:
-            recommendations = json.load(f)
+        with open(file_path, 'r') as f:
+            return json.load(f)
     except FileNotFoundError:
-        st.error("intervention_recommendations.json file not found. Please ensure the file is in the application directory.")
-        return
-    except json.JSONDecodeError as e:
-        st.error(f"Error reading intervention_recommendations.json: {str(e)}")
-        return
-    except Exception as e:
-        st.error(f"Unexpected error loading recommendations: {str(e)}")
-        return
-    
-    # Get current metrics for context
-    current_wip = metrics.get('current_wip', 206)
-    current_cycle_time = metrics.get('current_cycle_time', 28.4)
-    current_throughput = metrics.get('current_throughput', 8.2)
-    current_predictability = metrics.get('current_predictability', 62.1)
-    
-    # Priority colors mapping
-    priority_colors = {"P0": "#e74c3c", "P1": "#f39c12", "P2": "#3498db"}
-    
-    # Create tabs for different intervention phases
-    tabs = st.tabs([
-        "🚨 Immediate Actions (Week 1-2)", 
-        "📋 Short-term Improvements (Month 1-2)", 
-        "🔄 Long-term Transformation (Month 3-6)",
-        "📊 Impact Analysis",
-        "📈 Success Tracking"
-    ])
-    
-    # Tab 1: Immediate Actions
-    with tabs[0]:
-        try:
-            st.markdown("### Critical Stabilization Actions")
-            st.markdown("*These actions must be taken immediately to prevent further degradation and start recovery*")
-            
-            immediate_actions = recommendations.get("immediate_actions", [])
-            
-            if not immediate_actions:
-                st.warning("No immediate actions found in the recommendations.")
-            else:
-                for action in immediate_actions:
-                    with st.expander(f"{action.get('priority', 'P1')}: {action.get('title', 'Action')} ({action.get('timeline', 'TBD')})", expanded=True):
-                        # Summary
-                        if 'summary' in action:
-                            st.markdown(f"**Executive Summary:**")
-                            st.markdown(action['summary'])
-                        
-                        # Business case
-                        if 'business_case' in action:
-                            st.markdown("""
-                            <div class="business-case-card">
-                                <h4>💼 Business Case</h4>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            business_case = action['business_case']
-                            
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                if 'problem_statement' in business_case:
-                                    st.markdown("**Problem Statement:**")
-                                    st.markdown(f">{business_case['problem_statement']}")
-                                
-                                if 'current_impact' in business_case:
-                                    st.markdown("**Current Impact:**")
-                                    impact = business_case['current_impact']
-                                    if isinstance(impact, dict):
-                                        for key, value in impact.items():
-                                            icon = "💰" if "financial" in key.lower() else "⚙️" if "operational" in key.lower() else "🎯" if "strategic" in key.lower() else "👥" if "human" in key.lower() else "•"
-                                            st.markdown(f"- {icon} **{key.replace('_', ' ').title()}:** {value}")
-                                    else:
-                                        st.markdown(f"- {impact}")
-                            
-                            with col2:
-                                if 'solution_value' in business_case:
-                                    st.markdown("**Solution Value:**")
-                                    value = business_case['solution_value']
-                                    if isinstance(value, dict):
-                                        for key, val in value.items():
-                                            st.markdown(f"- **{key.replace('_', ' ').title()}:** {val}")
-                                    else:
-                                        st.markdown(f"- {value}")
-                                
-                                if 'roi_calculation' in business_case:
-                                    st.markdown(f"**ROI Calculation:** {business_case['roi_calculation']}")
-                                
-                                if 'risk_of_inaction' in business_case:
-                                    st.markdown(f"**⚠️ Risk of Inaction:** {business_case['risk_of_inaction']}")
-                        
-                        # Metrics impact visualization
-                        if 'metrics_impact' in action:
-                            st.markdown("#### Expected Metrics Impact")
-                            
-                            metrics_impact = action['metrics_impact']
-                            before = metrics_impact.get('before', {})
-                            after = metrics_impact.get('after', {})
-                            
-                            if before and after:
-                                # Create comparison chart
-                                metrics_data = {
-                                    'Metric': list(before.keys()),
-                                    'Current': list(before.values()),
-                                    'Expected': list(after.values())
-                                }
-                                
-                                fig_impact = go.Figure()
-                                
-                                fig_impact.add_trace(go.Bar(
-                                    name='Current State',
-                                    x=metrics_data['Metric'],
-                                    y=metrics_data['Current'],
-                                    marker_color='#e74c3c'
-                                ))
-                                
-                                fig_impact.add_trace(go.Bar(
-                                    name='Expected After Implementation',
-                                    x=metrics_data['Metric'],
-                                    y=metrics_data['Expected'],
-                                    marker_color='#27ae60'
-                                ))
-                                
-                                fig_impact.update_layout(
-                                    title=f"Impact of {action.get('title', 'Action')}",
-                                    xaxis_title="Metrics",
-                                    yaxis_title="Value",
-                                    barmode='group',
-                                    height=300
-                                )
-                                
-                                st.plotly_chart(fig_impact, use_container_width=True)
-                            
-                            if 'timeframe' in metrics_impact:
-                                st.markdown(f"**Expected Timeframe:** {metrics_impact['timeframe']}")
-                        
-                        # Implementation steps
-                        if 'detailed_actions' in action:
-                            st.markdown("---")
-                            st.markdown("#### 📋 Implementation Steps")
-                            
-                            for i, step in enumerate(action['detailed_actions'], 1):
-                                st.markdown(f"""
-                                <div class="implementation-step">
-                                    <h5>Step {i}: {step.get('name', 'Step')} ({step.get('duration', 'TBD')})</h5>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                col1, col2 = st.columns(2)
-                                
-                                with col1:
-                                    if 'definition_of_ready' in step:
-                                        st.markdown("**📌 Definition of Ready:**")
-                                        for item in step['definition_of_ready']:
-                                            st.markdown(f"• {item}")
-                                    
-                                    if 'steps' in step:
-                                        st.markdown("**🔨 Steps to Execute:**")
-                                        for j, action_step in enumerate(step['steps'], 1):
-                                            st.markdown(f"{j}. {action_step}")
-                                
-                                with col2:
-                                    if 'definition_of_done' in step:
-                                        st.markdown("**✅ Definition of Done:**")
-                                        for item in step['definition_of_done']:
-                                            st.markdown(f"• {item}")
-                                    
-                                    if 'dependencies' in step:
-                                        st.markdown(f"**🔗 Dependencies:** {step['dependencies']}")
-                                    if 'responsible_party' in step:
-                                        st.markdown(f"**👤 Responsible:** {step['responsible_party']}")
-                                    
-                                    if 'deliverables' in step:
-                                        st.markdown("**📄 Deliverables:**")
-                                        for deliverable in step['deliverables']:
-                                            st.markdown(f"• {deliverable}")
-                                
-                                if i < len(action['detailed_actions']):
-                                    st.markdown("---")
-                        
-                        # Success criteria and pitfalls
-                        if 'success_criteria' in action or 'common_pitfalls' in action:
-                            st.markdown("---")
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                if 'success_criteria' in action:
-                                    st.markdown("#### ✅ Success Criteria")
-                                    for criterion in action['success_criteria']:
-                                        st.markdown(f"""
-                                        <div class="success-metric">
-                                            {criterion}
-                                        </div>
-                                        """, unsafe_allow_html=True)
-                            
-                            with col2:
-                                if 'common_pitfalls' in action:
-                                    st.markdown("#### ⚠️ Common Pitfalls to Avoid")
-                                    for pitfall in action['common_pitfalls']:
-                                        st.markdown(f"""
-                                        <div class="pitfall-warning">
-                                            {pitfall}
-                                        </div>
-                                        """, unsafe_allow_html=True)
-        
-        except Exception as e:
-            st.error(f"Error displaying immediate actions: {str(e)}")
-    
-    # Tab 2: Short-term Improvements
-    with tabs[1]:
-        try:
-            st.markdown("### Process and Quality Improvements")
-            st.markdown("*Building sustainable practices for consistent delivery performance*")
-            
-            short_term_actions = recommendations.get("short_term_improvements", [])
-            
-            if not short_term_actions:
-                st.warning("No short-term improvements found in the recommendations.")
-            else:
-                for action in short_term_actions:
-                    with st.expander(f"{action.get('priority', 'P1')}: {action.get('title', 'Action')} ({action.get('timeline', 'TBD')})", expanded=False):
-                        # Summary
-                        if 'summary' in action:
-                            st.markdown(f"**Executive Summary:**")
-                            st.markdown(action['summary'])
-                        
-                        # Business case
-                        if 'business_case' in action:
-                            business_case = action['business_case']
-                            
-                            st.markdown("**Problem & Impact:**")
-                            current_impact = business_case.get('current_impact', {})
-                            
-                            impact_text = f"**Problem:** {business_case.get('problem_statement', 'N/A')}\n\n**Current Impact:**\n"
-                            
-                            if isinstance(current_impact, dict):
-                                for key, value in current_impact.items():
-                                    formatted_key = key.replace('_', ' ').title()
-                                    impact_text += f"- {formatted_key}: {value}\n"
-                            else:
-                                impact_text += f"- {current_impact}\n"
-                            
-                            st.info(impact_text)
-                            
-                            st.markdown("**Expected Improvements:**")
-                            value = business_case.get('solution_value', {})
-                            
-                            value_text = "**Value Delivery:**\n"
-                            if isinstance(value, dict):
-                                for key, val in value.items():
-                                    formatted_key = key.replace('_', ' ').title()
-                                    value_text += f"- {formatted_key}: {val}\n"
-                            else:
-                                value_text += f"- {value}\n"
-                            
-                            investment_rationale = business_case.get('investment_logic', business_case.get('investment_rationale', business_case.get('roi_calculation', 'N/A')))
-                            value_text += f"\n**Investment Rationale:** {investment_rationale}"
-                            
-                            st.success(value_text)
-                        
-                        # Metrics impact
-                        if 'metrics_impact' in action:
-                            st.markdown("#### Metrics Improvement Potential")
-                            
-                            metrics_impact = action['metrics_impact']
-                            before = metrics_impact.get('before', {})
-                            after = metrics_impact.get('after', {})
-                            
-                            if before and after:
-                                # Create radar chart
-                                categories = list(before.keys())
-                                before_values = list(before.values())
-                                after_values = list(after.values())
-                                
-                                fig_radar = go.Figure()
-                                
-                                fig_radar.add_trace(go.Scatterpolar(
-                                    r=before_values,
-                                    theta=categories,
-                                    fill='toself',
-                                    name='Current State',
-                                    line_color='#e74c3c'
-                                ))
-                                
-                                fig_radar.add_trace(go.Scatterpolar(
-                                    r=after_values,
-                                    theta=categories,
-                                    fill='toself',
-                                    name='Target State',
-                                    line_color='#27ae60'
-                                ))
-                                
-                                fig_radar.update_layout(
-                                    polar=dict(
-                                        radialaxis=dict(
-                                            visible=True,
-                                            range=[0, 100]
-                                        )),
-                                    title=f"{action.get('title', 'Action')} - Expected Improvements",
-                                    showlegend=True,
-                                    height=400
-                                )
-                                
-                                st.plotly_chart(fig_radar, use_container_width=True)
-                        
-                        # Implementation actions
-                        if 'detailed_actions' in action:
-                            st.markdown("---")
-                            st.markdown("#### 🛠️ Key Implementation Actions")
-                            
-                            for step in action['detailed_actions']:
-                                st.markdown(f"""
-                                <div class="implementation-step">
-                                    <h5>{step.get('name', 'Action')}</h5>
-                                    <p><strong>Duration:</strong> {step.get('duration', 'TBD')}</p>
-                                    <p><strong>Key Activities:</strong></p>
-                                </div>
-                                """, unsafe_allow_html=True)
-                                
-                                if 'steps' in step:
-                                    for i, s in enumerate(step['steps'], 1):
-                                        st.markdown(f"{i}. {s}")
-                                
-                                st.markdown("")
-                        
-                        # Success criteria
-                        if 'success_criteria' in action:
-                            st.markdown("---")
-                            st.markdown("#### 📊 How We'll Measure Success")
-                            success_cols = st.columns(2)
-                            
-                            for i, criterion in enumerate(action['success_criteria']):
-                                with success_cols[i % 2]:
-                                    st.info(f"📌 {criterion}")
-        
-        except Exception as e:
-            st.error(f"Error displaying short-term improvements: {str(e)}")
-    
-    # Tab 3: Long-term Transformation
-    with tabs[2]:
-        try:
-            st.markdown("### Strategic Capability Building")
-            st.markdown("*Creating sustainable excellence and adaptability for long-term success*")
-            
-            long_term_actions = recommendations.get("long_term_transformation", [])
-            
-            if not long_term_actions:
-                st.warning("No long-term transformation actions found in the recommendations.")
-            else:
-                for action in long_term_actions:
-                    with st.expander(f"{action.get('priority', 'P2')}: {action.get('title', 'Action')} ({action.get('timeline', 'TBD')})", expanded=False):
-                        if 'summary' in action:
-                            st.markdown(f"**Vision:** {action['summary']}")
-                        
-                        # Strategic value proposition
-                        if 'business_case' in action:
-                            business_case = action['business_case']
-                            
-                            st.markdown("#### Strategic Value Proposition")
-                            
-                            col1, col2 = st.columns(2)
-                            
-                            with col1:
-                                if 'current_impact' in business_case:
-                                    st.markdown("**Current Limitations:**")
-                                    current_impact = business_case['current_impact']
-                                    if isinstance(current_impact, dict):
-                                        for key, value in current_impact.items():
-                                            st.markdown(f"- **{key.replace('_', ' ').title()}:** {value}")
-                                    else:
-                                        st.markdown(f"- {current_impact}")
-                            
-                            with col2:
-                                if 'solution_value' in business_case:
-                                    st.markdown("**Future Capabilities:**")
-                                    solution_value = business_case['solution_value']
-                                    if isinstance(solution_value, dict):
-                                        for key, value in solution_value.items():
-                                            st.markdown(f"- **{key.replace('_', ' ').title()}:** {value}")
-                                    else:
-                                        st.markdown(f"- {solution_value}")
-                        
-                        # Timeline visualization
-                        if 'detailed_actions' in action:
-                            st.markdown("---")
-                            st.markdown("#### 🗺️ Transformation Roadmap")
-                            
-                            # Create timeline
-                            fig_timeline = go.Figure()
-                            
-                            for i, step in enumerate(action['detailed_actions']):
-                                fig_timeline.add_trace(go.Scatter(
-                                    x=[i+1, i+1.8],
-                                    y=[1, 1],
-                                    mode='lines',
-                                    line=dict(color=priority_colors.get(action.get('priority', 'P2'), '#3498db'), width=20),
-                                    showlegend=False,
-                                    hovertemplate=f"{step.get('name', 'Step')}<br>{step.get('duration', 'TBD')}<extra></extra>"
-                                ))
-                                
-                                fig_timeline.add_annotation(
-                                    x=i+1.4,
-                                    y=1.2,
-                                    text=step.get('name', 'Step'),
-                                    showarrow=False,
-                                    font=dict(size=10)
-                                )
-                            
-                            fig_timeline.update_layout(
-                                title="Implementation Timeline",
-                                xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                                yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[0.5, 1.5]),
-                                height=200
-                            )
-                            
-                            st.plotly_chart(fig_timeline, use_container_width=True)
-                            
-                            # Implementation details
-                            st.markdown("---")
-                            st.markdown("#### 📋 Implementation Details")
-                            
-                            for i, step in enumerate(action['detailed_actions'], 1):
-                                st.markdown(f"**Phase {i}: {step.get('name', 'Phase')}** ({step.get('duration', 'TBD')})")
-                                
-                                if 'steps' in step:
-                                    st.markdown("Key Activities:")
-                                    for activity in step['steps']:
-                                        st.markdown(f"• {activity}")
-                                
-                                st.markdown("")
-                        
-                        # Success factors
-                        if 'success_criteria' in action:
-                            st.markdown("---")
-                            st.markdown("#### 🎯 Critical Success Factors")
-                            
-                            for criterion in action['success_criteria']:
-                                st.success(f"✅ {criterion}")
-        
-        except Exception as e:
-            st.error(f"Error displaying long-term transformation: {str(e)}")
-    
-    # Tab 4: Impact Analysis
-    with tabs[3]:
-        try:
-            st.markdown("### Comprehensive Impact Analysis")
-            st.markdown("*Understanding the cumulative effect of all interventions*")
-            
-            # Overall impact summary
-            st.markdown("#### Projected Performance Transformation")
-            
-            # Create comprehensive before/after comparison
-            all_metrics = {
-                'Work in Progress': {'current': current_wip, 'immediate': 25, 'short_term': 20, 'long_term': 18},
-                'Cycle Time (days)': {'current': current_cycle_time, 'immediate': 15, 'short_term': 10, 'long_term': 6},
-                'Throughput (items/sprint)': {'current': current_throughput, 'immediate': 12, 'short_term': 15, 'long_term': 20},
-                'Predictability (%)': {'current': current_predictability, 'immediate': 70, 'short_term': 80, 'long_term': 90},
-                'Build Success (%)': {'current': 78, 'immediate': 82, 'short_term': 90, 'long_term': 95},
-                'Rework (%)': {'current': 18, 'immediate': 15, 'short_term': 10, 'long_term': 5}
-            }
-            
-            # Create timeline comparison chart
-            fig_timeline = go.Figure()
-            
-            phases = ['Current', 'Week 1-2', 'Month 1-2', 'Month 3-6']
-            
-            for metric, values in all_metrics.items():
-                fig_timeline.add_trace(go.Scatter(
-                    x=phases,
-                    y=[values['current'], values['immediate'], values['short_term'], values['long_term']],
-                    mode='lines+markers',
-                    name=metric,
-                    line=dict(width=3),
-                    marker=dict(size=10)
-                ))
-            
-            fig_timeline.update_layout(
-                title="Performance Metrics Evolution Through Intervention Phases",
-                xaxis_title="Implementation Phase",
-                yaxis_title="Metric Value",
-                height=500,
-                hovermode='x unified'
-            )
-            
-            st.plotly_chart(fig_timeline, use_container_width=True)
-            
-            # ROI Analysis
+        st.error(f"Error: The file {file_path} was not found. Please ensure it's in the correct directory.")
+        return None
+    except json.JSONDecodeError:
+        st.error(f"Error: The file {file_path} is not a valid JSON file. Please check its format.")
+        return None
+
+def show_intervention_roadmap():
+    """
+    Renders the entire intervention roadmap section, including detailed recommendations,
+    impact analysis, and success tracking, based on the comprehensive JSON file.
+    """
+    st.markdown("## 🎯 Intervention Strategy & Implementation Roadmap")
+    st.markdown("*A prioritized, phased playbook to address systemic issues and drive sustainable performance improvement. This plan moves from immediate stabilization to long-term capability building.*")
+
+    recommendations = load_recommendations()
+    if not recommendations:
+        return # Stop execution if the JSON file failed to load
+
+    # --- Create the Main Tab Layout ---
+    tab_titles = [
+        "🚨 Immediate Actions (Week 1-2)",
+        "🛠️ Short-term Improvements (Month 1-2)",
+        "🌱 Long-term Transformation (Month 3-6)",
+        "📈 Impact Analysis",
+        "✅ Success Tracking"
+    ]
+    immediate_tab, short_term_tab, long_term_tab, impact_tab, tracking_tab = st.tabs(tab_titles)
+
+    # --- Helper function to display a single recommendation ---
+    def display_recommendation(rec):
+        priority_colors = {"P0": "#D32F2F", "P1": "#FBC02D", "P2": "#388E3C"}
+        # Each recommendation is its own expander
+        with st.expander(f"**{rec['priority']}: {rec['title']}** ({rec['timeline']})", expanded=True):
+            st.markdown(f"<p style='color:{priority_colors.get(rec['priority'], '#555')}; font-weight:bold;'>PRIORITY: {rec['priority']}</p>", unsafe_allow_html=True)
+            st.markdown(f"**Summary:** {rec['summary']}")
+
+            # Business Case Section
+            with st.container(border=True):
+                 st.markdown("##### 💼 Business Case")
+                 bc = rec['business_case']
+                 st.markdown(f"**Problem:** {bc['problem_statement']}")
+                 st.markdown(f"**Current Impact:**")
+                 for key, value in bc['current_impact'].items():
+                     st.markdown(f"- **{key.replace('_', ' ').title()}:** {value}")
+                 st.markdown(f"**Solution Value:**")
+                 for key, value in bc['solution_value'].items():
+                     st.markdown(f"- **{key.replace('_', ' ').title()}:** {value}")
+
+            # Detailed Actions Section
+            st.markdown("##### 🚀 Detailed Actions")
+            for i, action in enumerate(rec['detailed_actions']):
+                 with st.container(border=True):
+                    st.markdown(f"**Phase {i+1}: {action['name']}**")
+                    st.info(f"**Objective:** {action['objective']}")
+
+                    # --- THIS IS THE CORRECTED SECTION ---
+                    # Theoretical Foundation
+                    if 'theoretical_foundation' in action:
+                        # Create a unique key for the toggle to avoid duplicate widget errors
+                        toggle_key = f"theory_toggle_{rec['id']}_{action['action_id']}"
+                        if st.toggle("Show Theoretical Foundation", key=toggle_key):
+                            with st.container(border=True):
+                                for foundation in action['theoretical_foundation']:
+                                    st.markdown(f"**Principle:** {foundation['principle']}")
+                                    st.markdown(f"_{foundation['explanation']}_")
+                    # --- END OF CORRECTION ---
+
+                    # Facilitation Guide
+                    st.markdown("**Facilitation Guide:**")
+                    for step in action['facilitation_guide']:
+                        st.markdown(step)
+            st.markdown("---")
+
+
+    # --- Populate the Recommendation Tabs ---
+    with immediate_tab:
+        st.markdown("### Critical interventions to halt performance degradation and stabilize the system immediately.")
+        for rec in recommendations.get('immediate_actions', []):
+            display_recommendation(rec)
+
+    with short_term_tab:
+        st.markdown("### Foundational improvements to processes and quality that build on initial stability.")
+        for rec in recommendations.get('short_term_improvements', []):
+            display_recommendation(rec)
+
+    with long_term_tab:
+        st.markdown("### Strategic investments in people and technology to build a resilient, high-performing, and scalable team.")
+        for rec in recommendations.get('long_term_transformation', []):
+            display_recommendation(rec)
+
+    # --- Populate the Impact Analysis Tab ---
+    with impact_tab:
+        st.markdown("### Comprehensive Impact Analysis")
+        st.markdown("*Understanding the cumulative effect of all interventions.*")
+
+        # 1. Projected Performance Transformation Chart
+        st.markdown("#### Projected Performance Transformation")
+        st.markdown("*Performance Metrics Evolution Through Intervention Phases*")
+
+        impact_data = {
+            'Phase': ['Current', 'Week 1-2', 'Month 1-3', 'Month 3-6'],
+            'Work in Progress': [205, 25, 22, 20],
+            'Cycle Time (Days)': [28.4, 9.5, 7.0, 6.0],
+            'Throughput (Items/Sprint)': [8.2, 14.8, 16.5, 18.0],
+            'Predictability (%)': [63.0, 78.0, 85.0, 90.0],
+            'Rework (%)': [18.0, 12.0, 8.0, 5.0]
+        }
+        df_impact = pd.DataFrame(impact_data)
+
+        fig = go.Figure()
+        colors = {'Work in Progress': '#1f77b4', 'Cycle Time (Days)': '#ff7f0e', 'Throughput (Items/Sprint)': '#2ca02c', 'Predictability (%)': '#d62728', 'Rework (%)': '#9467bd'}
+        for col, color in colors.items():
+            fig.add_trace(go.Scatter(
+                x=df_impact['Phase'],
+                y=df_impact[col],
+                name=col,
+                mode='lines+markers',
+                line=dict(color=color, width=3),
+                marker=dict(size=8)
+            ))
+
+        fig.update_layout(
+            title_text='Performance Metrics Evolution Through Intervention Phases',
+            xaxis_title='Implementation Phase',
+            yaxis_title='Metric Value',
+            legend_title_text='Metrics',
+            height=450
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        # 2. Return on Investment & Risk Mitigation
+        col1, col2 = st.columns(2)
+        with col1:
             st.markdown("#### Return on Investment Analysis")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                st.metric(
-                    label="Delivery Capacity Increase",
-                    value="119%",
-                    delta="From 8.2 to 18 items/sprint",
-                    help="Based on throughput improvements"
-                )
-            
-            with col2:
-                st.metric(
-                    label="Cycle Time Reduction",
-                    value="79%",
-                    delta="From 28.4 to 6 days",
-                    help="Faster time to market"
-                )
-            
-            with col3:
-                st.metric(
-                    label="Quality Improvement",
-                    value="72%",
-                    delta="Rework reduced from 18% to 5%",
-                    help="Less waste, more value delivery"
-                )
-            
-            # Risk mitigation
+            increase = ((18.0 - 8.2) / 8.2) * 100
+            st.metric(label="🚀 Delivery Capacity Increase", value=f"{increase:.0f}%", delta="From 8.2 to 18 Items/Sprint")
+
+            ct_reduction = ((28.4 - 6.0) / 28.4) * 100
+            st.metric(label="⏱️ Cycle Time Reduction", value=f"{ct_reduction:.0f}%", delta="From 28.4 to 6.0 Days", delta_color="inverse")
+
+            quality_improvement = ((18.0 - 5.0) / 18.0) * 100
+            st.metric(label="✨ Quality Improvement", value=f"{quality_improvement:.0f}%", delta="Rework reduced from 18% to 5%")
+
+        with col2:
             st.markdown("#### Risk Mitigation Value")
-            
-            risk_metrics = {
-                'Single Point of Failure Risk': {'current': 'Critical', 'after': 'Low'},
-                'Delivery Predictability': {'current': 'Poor (62%)', 'after': 'Excellent (90%)'},
-                'Team Burnout Risk': {'current': 'High', 'after': 'Low'},
-                'Technical Debt Growth': {'current': 'Accelerating', 'after': 'Controlled'}
-            }
-            
-            for risk, values in risk_metrics.items():
-                col1, col2 = st.columns([1, 3])
-                with col1:
-                    st.markdown(f"**{risk}:**")
-                with col2:
-                    if values['current'] in ['Critical', 'High', 'Accelerating']:
-                        st.markdown(f"🔴 {values['current']} → 🟢 {values['after']}")
-                    else:
-                        st.markdown(f"🟡 {values['current']} → 🟢 {values['after']}")
+            st.markdown("""
+                <style>
+                .risk-item { display: flex; align-items: center; margin-bottom: 12px; font-size: 1.1em;}
+                .risk-dot { height: 15px; width: 15px; border-radius: 50%; margin-right: 10px; }
+                .risk-text { font-weight: 500; }
+                .risk-arrow { margin-left: auto; font-size: 1.2em; }
+                .red { background-color: #D32F2F; }
+                .green { background-color: #388E3C; }
+                .orange { background-color: #FBC02D; }
+                </style>
+                <div class="risk-item">
+                    <div class="risk-dot red"></div><div class="risk-text">Single Point of Failure Risk</div><div class="risk-arrow">➡️</div><div class="risk-dot green"></div><div class="risk-text">Low</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-dot red"></div><div class="risk-text">Delivery Predictability: Poor (62%)</div><div class="risk-arrow">➡️</div><div class="risk-dot green"></div><div class="risk-text">Excellent (90%)</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-dot red"></div><div class="risk-text">Team Burnout Risk: High</div><div class="risk-arrow">➡️</div><div class="risk-dot green"></div><div class="risk-text">Low</div>
+                </div>
+                <div class="risk-item">
+                    <div class="risk-dot orange"></div><div class="risk-text">Technical Debt Growth: Accelerating</div><div class="risk-arrow">➡️</div><div class="risk-dot green"></div><div class="risk-text">Controlled</div>
+                </div>
+            """, unsafe_allow_html=True)
+
+
+    # --- Populate the Success Tracking Tab ---
+    with tracking_tab:
+        st.markdown("### Implementation Progress Checklist")
+        st.markdown("*Tracking the execution of the intervention plan.*")
+
+        checklist_data = []
+        all_recs = (
+            recommendations.get('immediate_actions', []) +
+            recommendations.get('short_term_improvements', []) +
+            recommendations.get('long_term_transformation', [])
+        )
+
+        phase_map = {
+            "immediate_actions": "Immediate",
+            "short_term_improvements": "Short-Term",
+            "long_term_transformation": "Long-Term"
+        }
+
+        current_phase = ""
+        for phase_key, recs in recommendations.items():
+            phase_name = phase_map.get(phase_key)
+            for rec in recs:
+                 checklist_data.append({
+                    'Phase': phase_name,
+                    'Priority': rec['priority'],
+                    'Action': rec['title'],
+                    'Timeline': rec['timeline'],
+                    'Status': 'Not Started' # This would be dynamic in a real app
+                })
+
+        df_checklist = pd.DataFrame(checklist_data)
+        st.dataframe(df_checklist, use_container_width=True, hide_index=True)
+
+        st.markdown("---")
+        st.markdown("### ✅ Early Success Indicators")
+        st.markdown("*Key leading indicators to watch for in the first 1-4 weeks to confirm the plan is working.*")
+
+        # Collect all early success indicators
+        early_indicators = []
+        for rec in recommendations.get('immediate_actions', []) + recommendations.get('short_term_improvements', []):
+            if 'early_success_indicators' in rec:
+                early_indicators.extend(rec['early_success_indicators'])
+
+        # Display in two columns
+        col1, col2 = st.columns(2)
+        # Remove duplicates while preserving order
+        unique_indicators = list(dict.fromkeys(early_indicators))
+        midpoint = len(unique_indicators) // 2 + (len(unique_indicators) % 2)
         
-        except Exception as e:
-            st.error(f"Error displaying impact analysis: {str(e)}")
-    
-    # Tab 5: Success Tracking
-    with tabs[4]:
-        try:
-            st.markdown("### Success Metrics & Progress Tracking")
-            st.markdown("*Real-time monitoring of intervention effectiveness*")
-            
-            # KPI Dashboard
-            st.markdown("#### Key Performance Indicators Dashboard")
-            
-            kpi_cols = st.columns(4)
-            
-            kpis = [
-                {"name": "WIP Reduction", "current": current_wip, "target": 20, "unit": "items"},
-                {"name": "Cycle Time", "current": current_cycle_time, "target": 6, "unit": "days"},
-                {"name": "Throughput", "current": current_throughput, "target": 18, "unit": "items/sprint"},
-                {"name": "Predictability", "current": current_predictability, "target": 85, "unit": "%"}
-            ]
-            
-            for i, kpi in enumerate(kpis):
-                with kpi_cols[i]:
-                    # Calculate progress
-                    if kpi["name"] in ["WIP Reduction", "Cycle Time"]:
-                        progress = max(0, (kpi["current"] - kpi["target"]) / kpi["current"] * 100) if kpi["current"] > 0 else 0
-                    else:
-                        progress = min(100, kpi["current"] / kpi["target"] * 100) if kpi["target"] > 0 else 0
-                    
-                    color = "#27ae60" if progress > 80 else "#f39c12" if progress > 50 else "#e74c3c"
-                    
-                    st.markdown(f"""
-                    <div class="metric-impact-card" style="border-color: {color}; text-align: center;">
-                        <h5>{kpi['name']}</h5>
-                        <div style="font-size: 2rem; font-weight: bold; color: {color};">{kpi['current']:.1f}</div>
-                        <div style="color: #666;">Target: {kpi['target']} {kpi['unit']}</div>
-                        <div style="margin-top: 10px;">
-                            <div style="background: #f0f0f0; height: 10px; border-radius: 5px;">
-                                <div style="background: {color}; height: 10px; width: {progress:.0f}%; border-radius: 5px;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    """, unsafe_allow_html=True)
-            
-            # Implementation checklist
-            st.markdown("---")
-            st.markdown("#### 📋 Implementation Progress Checklist")
-            
-            # Group actions by phase
-            all_actions = []
-            
-            for action in recommendations.get("immediate_actions", []):
-                all_actions.append({
-                    "phase": "Immediate",
-                    "title": action.get("title", "Action"),
-                    "timeline": action.get("timeline", "TBD"),
-                    "priority": action.get("priority", "P1")
-                })
-            
-            for action in recommendations.get("short_term_improvements", []):
-                all_actions.append({
-                    "phase": "Short-term",
-                    "title": action.get("title", "Action"),
-                    "timeline": action.get("timeline", "TBD"),
-                    "priority": action.get("priority", "P1")
-                })
-            
-            for action in recommendations.get("long_term_transformation", []):
-                all_actions.append({
-                    "phase": "Long-term",
-                    "title": action.get("title", "Action"),
-                    "timeline": action.get("timeline", "TBD"),
-                    "priority": action.get("priority", "P2")
-                })
-            
-            if all_actions:
-                # Create progress tracking table
-                progress_data = []
-                for action in all_actions:
-                    progress_data.append({
-                        "Phase": action["phase"],
-                        "Priority": action["priority"],
-                        "Action": action["title"],
-                        "Timeline": action["timeline"],
-                        "Status": "⏳ Not Started",
-                        "Progress": 0
-                    })
-                
-                df_progress = pd.DataFrame(progress_data)
-                
-                # Style the dataframe
-                def style_priority(val):
-                    color_map = {"P0": "#e74c3c", "P1": "#f39c12", "P2": "#3498db"}
-                    return f'color: {color_map.get(val, "#000")}'
-                
-                styled_df = df_progress.style.applymap(style_priority, subset=['Priority'])
-                
-                st.dataframe(styled_df, use_container_width=True, height=400)
-            else:
-                st.info("No actions to track.")
-            
-            # Success indicators
-            st.markdown("---")
-            st.markdown("#### ✅ Early Success Indicators")
-            
-            success_indicators = [
-                "✅ WIP reduced below 50 items within first week",
-                "✅ Zero new work started during stabilization period",
-                "✅ First completed items delivered to stakeholders",
-                "✅ Support rotation successfully handling all interrupts",
-                "✅ Team stress indicators showing improvement",
-                "✅ Knowledge transfer sessions completed for critical areas",
-                "✅ Quality gates preventing defects from reaching production",
-                "✅ Sprint completion rate improving week over week"
-            ]
-            
-            col1, col2 = st.columns(2)
-            
-            for i, indicator in enumerate(success_indicators):
-                with col1 if i % 2 == 0 else col2:
-                    st.markdown(indicator)
-        
-        except Exception as e:
-            st.error(f"Error displaying success tracking: {str(e)}")
+        with col1:
+            for indicator in unique_indicators[:midpoint]:
+                st.markdown(f"✔️ {indicator}")
+        with col2:
+            for indicator in unique_indicators[midpoint:]:
+                st.markdown(f"✔️ {indicator}")
 
 def main():
     """Main Streamlit application"""
@@ -3785,8 +3356,8 @@ def main():
             "📈 Executive Summary",
             "🔗 Correlation Analysis", 
             "🧠 Deep AI Insights",
-            "🔮 Predictive Scenarios"
-#            "🎯 Intervention Roadmap"
+            "🔮 Predictive Scenarios",
+            "🎯 Intervention Roadmap"
         ]
     )
     
@@ -3820,8 +3391,8 @@ def main():
     elif page == "🔮 Predictive Scenarios":
         show_predictive_scenarios(data, metrics)
         
-#    elif page == "🎯 Intervention Roadmap":
-#        show_intervention_roadmap(data, metrics)
+    elif page == "🎯 Intervention Roadmap":
+        show_intervention_roadmap()
 
 if __name__ == "__main__":
     main()
